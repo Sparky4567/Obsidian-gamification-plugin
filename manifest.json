@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-gamification-plugin",
+  "name": "Obsidian Gamification Plugin",
+  "version": "0.1.0",
+  "minAppVersion": "0.12.0",
+  "description": "A plugin to add gamification elements to Obsidian.",
+  "author": "Your Name",
+  "authorUrl": "https://yourwebsite.com",
+  "isDesktopOnly": false
+}

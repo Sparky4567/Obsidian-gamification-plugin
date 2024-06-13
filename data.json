@@ -1,0 +1,19 @@
+{
+  "streak": 0,
+  "lastDate": "",
+  "xp": 112.43899999999982,
+  "level": 7,
+  "health": 10,
+  "class": "Mage",
+  "skills": {
+    "Magic": 0,
+    "Wisdom": 0,
+    "Elemental Mastery": 0,
+    "Arcane Power": 0,
+    "Mana Control": 0,
+    "Spellcasting": 0,
+    "Teleportation": 0,
+    "Alchemy": 0
+  },
+  "totalWords": 208
+}
