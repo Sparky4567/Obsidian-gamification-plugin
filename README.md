@@ -6,7 +6,7 @@ obsidian-gamification-plugin
 
 ```
 git clone https://github.com/Sparky4567/Obsidian-gamification-plugin.git ./obsidian/plugins
-cd ./obsidian/plugins/gamification
+cd ./obsidian/plugins/Obsidian-gamification-plugin
 npm install --save
 npm run build
 
