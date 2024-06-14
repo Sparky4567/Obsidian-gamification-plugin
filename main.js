@@ -28,7 +28,21 @@ __export(main_exports, {
 });
 module.exports = __toCommonJS(main_exports);
 var import_obsidian = require("obsidian");
-var classes = ["Warrior", "Mage", "Rogue", "Archer", "Healer"];
+var classes = [
+  "Warrior",
+  "Mage",
+  "Rogue",
+  "Archer",
+  "Healer",
+  "Paladin",
+  "Necromancer",
+  "Druid",
+  "Bard",
+  "Monk",
+  "Sorcerer",
+  "Assassin",
+  "Ranger"
+];
 var skills = [
   // Warrior skills
   { name: "Strength", classes: ["Warrior"], points: 0 },
@@ -74,7 +88,79 @@ var skills = [
   { name: "Protective Aura", classes: ["Healer"], points: 0 },
   { name: "Divine Light", classes: ["Healer"], points: 0 },
   { name: "Herbalism", classes: ["Healer"], points: 0 },
-  { name: "Meditation", classes: ["Healer"], points: 0 }
+  { name: "Meditation", classes: ["Healer"], points: 0 },
+  // Paladin skills
+  { name: "Holy Strike", classes: ["Paladin"], points: 0 },
+  { name: "Divine Shield", classes: ["Paladin"], points: 0 },
+  { name: "Righteous Fury", classes: ["Paladin"], points: 0 },
+  { name: "Healing Light", classes: ["Paladin"], points: 0 },
+  { name: "Blessing", classes: ["Paladin"], points: 0 },
+  { name: "Smite", classes: ["Paladin"], points: 0 },
+  { name: "Aura of Protection", classes: ["Paladin"], points: 0 },
+  { name: "Holy Resistance", classes: ["Paladin"], points: 0 },
+  // Necromancer skills
+  { name: "Raise Dead", classes: ["Necromancer"], points: 0 },
+  { name: "Dark Pact", classes: ["Necromancer"], points: 0 },
+  { name: "Bone Armor", classes: ["Necromancer"], points: 0 },
+  { name: "Soul Siphon", classes: ["Necromancer"], points: 0 },
+  { name: "Curse", classes: ["Necromancer"], points: 0 },
+  { name: "Life Drain", classes: ["Necromancer"], points: 0 },
+  { name: "Plague", classes: ["Necromancer"], points: 0 },
+  { name: "Undead Minions", classes: ["Necromancer"], points: 0 },
+  // Druid skills
+  { name: "Shapeshift", classes: ["Druid"], points: 0 },
+  { name: "Nature's Grasp", classes: ["Druid"], points: 0 },
+  { name: "Regrowth", classes: ["Druid"], points: 0 },
+  { name: "Earthquake", classes: ["Druid"], points: 0 },
+  { name: "Animal Companionship", classes: ["Druid"], points: 0 },
+  { name: "Thorn Armor", classes: ["Druid"], points: 0 },
+  { name: "Wind Whisper", classes: ["Druid"], points: 0 },
+  { name: "Moonfire", classes: ["Druid"], points: 0 },
+  // Bard skills
+  { name: "Song of Courage", classes: ["Bard"], points: 0 },
+  { name: "Inspire", classes: ["Bard"], points: 0 },
+  { name: "Lullaby", classes: ["Bard"], points: 0 },
+  { name: "Battle Hymn", classes: ["Bard"], points: 0 },
+  { name: "Dance of Blades", classes: ["Bard"], points: 0 },
+  { name: "Epic Tale", classes: ["Bard"], points: 0 },
+  { name: "Harmony", classes: ["Bard"], points: 0 },
+  { name: "Dissonance", classes: ["Bard"], points: 0 },
+  // Monk skills
+  { name: "Fist of Fury", classes: ["Monk"], points: 0 },
+  { name: "Chi Focus", classes: ["Monk"], points: 0 },
+  { name: "Meditative Stance", classes: ["Monk"], points: 0 },
+  { name: "Pressure Point", classes: ["Monk"], points: 0 },
+  { name: "Inner Peace", classes: ["Monk"], points: 0 },
+  { name: "Swift Strike", classes: ["Monk"], points: 0 },
+  { name: "Mystic Barrier", classes: ["Monk"], points: 0 },
+  { name: "Spiritual Healing", classes: ["Monk"], points: 0 },
+  // Sorcerer skills
+  { name: "Fireball", classes: ["Sorcerer"], points: 0 },
+  { name: "Ice Shard", classes: ["Sorcerer"], points: 0 },
+  { name: "Lightning Bolt", classes: ["Sorcerer"], points: 0 },
+  { name: "Arcane Blast", classes: ["Sorcerer"], points: 0 },
+  { name: "Mystic Shield", classes: ["Sorcerer"], points: 0 },
+  { name: "Spell Weaving", classes: ["Sorcerer"], points: 0 },
+  { name: "Mana Surge", classes: ["Sorcerer"], points: 0 },
+  { name: "Summon Elemental", classes: ["Sorcerer"], points: 0 },
+  // Assassin skills
+  { name: "Shadow Strike", classes: ["Assassin"], points: 0 },
+  { name: "Vanish", classes: ["Assassin"], points: 0 },
+  { name: "Critical Hit", classes: ["Assassin"], points: 0 },
+  { name: "Silent Step", classes: ["Assassin"], points: 0 },
+  { name: "Death Mark", classes: ["Assassin"], points: 0 },
+  { name: "Poison Blade", classes: ["Assassin"], points: 0 },
+  { name: "Night Vision", classes: ["Assassin"], points: 0 },
+  { name: "Trap Disarm", classes: ["Assassin"], points: 0 },
+  // Ranger skills
+  { name: "Precision Shot", classes: ["Ranger"], points: 0 },
+  { name: "Forest Knowledge", classes: ["Ranger"], points: 0 },
+  { name: "Animal Taming", classes: ["Ranger"], points: 0 },
+  { name: "Natural Camouflage", classes: ["Ranger"], points: 0 },
+  { name: "Bow Mastery", classes: ["Ranger"], points: 0 },
+  { name: "Trap Expertise", classes: ["Ranger"], points: 0 },
+  { name: "Survival Instinct", classes: ["Ranger"], points: 0 },
+  { name: "Tracking Sense", classes: ["Ranger"], points: 0 }
 ];
 var uniqueSkills = [
   {
@@ -171,6 +257,66 @@ var uniqueSkills = [
     name: "Guardian's Oath",
     description: "Reduces damage taken by allies within 10 meters by 20%",
     rarity: "legendary"
+  },
+  {
+    name: "Soul Reaper",
+    description: "Steals a portion of enemy's life force upon hit",
+    rarity: "unique"
+  },
+  {
+    name: "Chrono Shift",
+    description: "Reverses the flow of time for 3 seconds, resetting your cooldowns",
+    rarity: "legendary"
+  },
+  {
+    name: "Divine Intervention",
+    description: "Automatically revives you with full health once per battle",
+    rarity: "legendary"
+  },
+  {
+    name: "Shadowmeld",
+    description: "Becomes invisible to enemies for 10 seconds or until you attack",
+    rarity: "rare"
+  },
+  {
+    name: "Ethereal Blade",
+    description: "Summons a ghostly sword that deals extra damage for 15 seconds",
+    rarity: "unique"
+  },
+  {
+    name: "Mirror Image",
+    description: "Creates illusions that distract enemies for 20 seconds",
+    rarity: "rare"
+  },
+  {
+    name: "Wrath of the Titans",
+    description: "Triples damage dealt for the next 3 attacks",
+    rarity: "unique"
+  },
+  {
+    name: "Dimensional Rift",
+    description: "Opens a portal to another realm, stunning nearby enemies",
+    rarity: "rare"
+  },
+  {
+    name: "Blood Pact",
+    description: "Sacrifices health to greatly increase damage output for 30 seconds",
+    rarity: "unique"
+  },
+  {
+    name: "Fury of the Storm",
+    description: "Summons a powerful storm that damages all enemies over time",
+    rarity: "legendary"
+  },
+  {
+    name: "Spectral Cloak",
+    description: "Becomes intangible and immune to damage for 5 seconds",
+    rarity: "rare"
+  },
+  {
+    name: "Eternal Flame",
+    description: "Permanently increases fire damage dealt by 20%",
+    rarity: "unique"
   }
 ];
 var enemies = [
