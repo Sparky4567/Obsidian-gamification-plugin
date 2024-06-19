@@ -378,7 +378,7 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
     super(...arguments);
     this.statusBarEl = null;
   }
-  updateStatusBar() {
+  async updateStatusBar() {
     if (this.statusBarEl) {
       this.statusBarEl.setText(
         `XP: ${this.data.xp}, Level: ${this.data.level}, Words: ${this.data.totalWords}`
@@ -388,15 +388,15 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
       "No status bar was detected";
     }
   }
-  addStatusBar() {
+  async addStatusBar() {
     this.statusBarEl = this.addStatusBarItem();
-    this.updateStatusBar();
+    await this.updateStatusBar();
   }
   async onload() {
     console.log("Loading Gamification Plugin");
     await this.loadSettings();
-    this.addStatusBar();
-    this.updateStatusBar();
+    await this.addStatusBar();
+    await this.updateStatusBar();
     this.addCommand({
       id: "reset-streak",
       name: "Reset Streak",
@@ -433,25 +433,27 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
   async saveSettings() {
     await this.saveData(this.data);
   }
-  updateStreak() {
+  async updateStreak() {
     const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
     if (this.data.lastDate !== today) {
-      if (this.data.lastDate === this.yesterday()) {
+      if (this.data.lastDate === await this.yesterday().then((data) => {
+        return data;
+      })) {
         this.data.streak++;
       } else {
         this.data.streak = 1;
       }
       this.data.lastDate = today;
-      this.saveSettings();
+      await this.saveSettings();
     }
   }
-  resetStreak() {
+  async resetStreak() {
     this.data.streak = 0;
     this.data.lastDate = "";
-    this.saveSettings();
-    this.addStatusBarItem().setText("Streak: 0 days");
+    await this.saveSettings();
+    await this.addStatusBarItem().setText("Streak: 0 days");
   }
-  yesterday() {
+  async yesterday() {
     const yesterday = /* @__PURE__ */ new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     return yesterday.toISOString().split("T")[0];
@@ -470,7 +472,7 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
     await this.saveSettings();
     new import_obsidian.Notice(`You have chosen the ${className} class!`);
   }
-  triggerRandomEvent() {
+  async triggerRandomEvent() {
     const events = [
       { type: "gain_xp", amount: Math.floor(Math.random() * 50) + 10 },
       { type: "lose_health", amount: Math.floor(Math.random() * 20) + 5 },
@@ -481,9 +483,9 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
     const points = event.amount;
     if (points !== void 0) {
       if (event.type === "gain_xp") {
-        this.enemyEncounter();
+        await this.enemyEncounter();
       } else if (event.type === "lose_health") {
-        this.enemyEncounter();
+        await this.enemyEncounter();
         this.data.health -= points;
         if (this.data.health < 0) this.data.health = 0;
         new import_obsidian.Notice(`You lost ${event.amount} health!`);
@@ -492,11 +494,11 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
         if (this.data.health > 100) this.data.health = 100;
         new import_obsidian.Notice(`You gained ${event.amount} health!`);
       } else if (event.type === "enemy_encounter") {
-        this.enemyEncounter();
+        await this.enemyEncounter();
       }
     }
   }
-  enemyEncounter() {
+  async enemyEncounter() {
     const enemy = enemies[Math.floor(Math.random() * enemies.length)];
     new import_obsidian.Notice(`An enemy ${enemy.name} appeared!`);
     const playerDamage = Math.floor(Math.random() * 20) + 5;
@@ -507,16 +509,16 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
       new import_obsidian.Notice(
         `You defeated the ${enemy.name} and gained ${enemy.xpReward} XP!`
       );
-      this.gainXP(enemy.xpReward);
-      this.attemptToGainUniqueSkill();
+      await this.gainXP(enemy.xpReward);
+      await this.attemptToGainUniqueSkill();
     } else {
       new import_obsidian.Notice(
         `The ${enemy.name} attacked you and you lost ${enemy.damage} health!`
       );
     }
-    this.saveSettings();
+    await this.saveSettings();
   }
-  attemptToGainUniqueSkill() {
+  async attemptToGainUniqueSkill() {
     const chance = Math.random();
     if (chance < 0.05) {
       const uniqueSkill = uniqueSkills[Math.floor(Math.random() * uniqueSkills.length)];
@@ -528,35 +530,41 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
       }
     }
   }
-  updateWordCount() {
+  async updateWordCount() {
     const activeLeaf = this.app.workspace.activeLeaf;
     if (activeLeaf && activeLeaf.view instanceof import_obsidian.MarkdownView) {
       const editor = activeLeaf.view.editor;
-      const wordCount = this.countWords(editor.getValue());
+      const wordCount = await this.countWords(editor.getValue()).then(
+        (wordCount2) => {
+          return wordCount2;
+        }
+      );
       const newWords = wordCount - this.data.totalWords;
       if (newWords > 0) {
         this.data.totalWords = wordCount;
-        this.updateStatusBar();
+        await this.updateStatusBar();
         if (wordCount > 50) {
-          this.triggerRandomEvent();
-          this.saveSettings();
+          await this.triggerRandomEvent();
+          await this.saveSettings();
         } else if (wordCount > 150) {
-          this.gainXP(newWords);
-          this.triggerRandomEvent();
-          this.saveSettings();
+          await this.gainXP(newWords);
+          await this.triggerRandomEvent();
+          await this.saveSettings();
         }
       }
     }
   }
-  countWords(text) {
+  async countWords(text) {
     return text.split(/\s+/).filter((word) => word.length > 0).length;
   }
-  gainXP(amount) {
+  async gainXP(amount) {
     this.data.xp += amount;
-    const requiredXP = this.calculateRequiredXP();
-    if (this.data.xp >= requiredXP) {
+    const requiredXP = this.calculateRequiredXP().then((xpAmount) => {
+      return xpAmount;
+    });
+    if (this.data.xp >= await requiredXP) {
       this.data.level++;
-      this.data.xp -= requiredXP;
+      this.data.xp -= await requiredXP;
       const className = classes[Math.floor(Math.random() * classes.length)];
       this.data.skills = {};
       if (this.data !== void 0) {
@@ -568,14 +576,14 @@ var GamificationPlugin = class extends import_obsidian.Plugin {
             new import_obsidian.Notice(`Congratulations! ${skill.name} points were updated`);
           }
         });
-        this.saveSettings();
+        await this.saveSettings();
         new import_obsidian.Notice(`Congratulations! You've reached level ${this.data.level}`);
       }
     } else {
       new import_obsidian.Notice(`You gained ${amount} XP!`);
     }
   }
-  calculateRequiredXP() {
+  async calculateRequiredXP() {
     return 100 * Math.pow(1.1, this.data.level - 1);
   }
 };
@@ -583,7 +591,7 @@ var GamificationSettingTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
   }
-  display() {
+  async display() {
     let { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Gamification Plugin" });
@@ -598,12 +606,12 @@ var GamificationSettingTab = class extends import_obsidian.PluginSettingTab {
         skills.filter((skill) => skill.classes.includes(value)).forEach((skill) => {
           this.plugin.data.skills[skill.name] = skill.points;
         });
-        await this.plugin.saveSettings();
-        this.display();
+        await this.plugin.saveSettings().then(async () => {
+          await this.display();
+        });
       });
     });
-    if (this.plugin.data.skills !== null) {
-      console.log(this.plugin.data.skills.points);
+    if (this.plugin.data.skills !== null && String(this.plugin.data.skills) !== "undefined") {
       Object.keys(this.plugin.data.skills).forEach((skill) => {
         new import_obsidian.Setting(containerEl).setName(skill).setDesc(`Skill level for ${skill}`).addText(
           (text) => text.setValue(`${this.plugin.data.skills[skill]}`)

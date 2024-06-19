@@ -395,7 +395,7 @@ const enemies: Enemy[] = [
 export default class GamificationPlugin extends Plugin {
   private data: PluginData;
   private statusBarEl: HTMLElement | null = null;
-  updateStatusBar() {
+  async updateStatusBar() {
     if (this.statusBarEl) {
       // Update the text content of the status bar item
       this.statusBarEl.setText(
@@ -406,17 +406,17 @@ export default class GamificationPlugin extends Plugin {
       ("No status bar was detected");
     }
   }
-  addStatusBar() {
+  async addStatusBar() {
     // Add your status bar item and store a reference to it
     this.statusBarEl = this.addStatusBarItem();
-    this.updateStatusBar(); // Ensure it's initialized correctly
+    await this.updateStatusBar(); // Ensure it's initialized correctly
   }
   async onload() {
     console.log("Loading Gamification Plugin");
     await this.loadSettings();
 
-    this.addStatusBar();
-    this.updateStatusBar();
+    await this.addStatusBar();
+    await this.updateStatusBar();
 
     this.addCommand({
       id: "reset-streak",
@@ -462,27 +462,32 @@ export default class GamificationPlugin extends Plugin {
     await this.saveData(this.data);
   }
 
-  updateStreak() {
+  async updateStreak() {
     const today = new Date().toISOString().split("T")[0];
     if (this.data.lastDate !== today) {
-      if (this.data.lastDate === this.yesterday()) {
+      if (
+        this.data.lastDate ===
+        (await this.yesterday().then((data) => {
+          return data;
+        }))
+      ) {
         this.data.streak++;
       } else {
         this.data.streak = 1;
       }
       this.data.lastDate = today;
-      this.saveSettings();
+      await this.saveSettings();
     }
   }
 
-  resetStreak() {
+  async resetStreak() {
     this.data.streak = 0;
     this.data.lastDate = "";
-    this.saveSettings();
-    this.addStatusBarItem().setText("Streak: 0 days");
+    await this.saveSettings();
+    await this.addStatusBarItem().setText("Streak: 0 days");
   }
 
-  yesterday() {
+  async yesterday() {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     return yesterday.toISOString().split("T")[0];
@@ -505,7 +510,7 @@ export default class GamificationPlugin extends Plugin {
     new Notice(`You have chosen the ${className} class!`);
   }
 
-  triggerRandomEvent() {
+  async triggerRandomEvent() {
     const events = [
       { type: "gain_xp", amount: Math.floor(Math.random() * 50) + 10 },
       { type: "lose_health", amount: Math.floor(Math.random() * 20) + 5 },
@@ -516,10 +521,10 @@ export default class GamificationPlugin extends Plugin {
     const points = event.amount;
     if (points !== undefined) {
       if (event.type === "gain_xp") {
-        this.enemyEncounter();
+        await this.enemyEncounter();
         // this.gainXP(points);
       } else if (event.type === "lose_health") {
-        this.enemyEncounter();
+        await this.enemyEncounter();
         this.data.health -= points;
         if (this.data.health < 0) this.data.health = 0;
         new Notice(`You lost ${event.amount} health!`);
@@ -528,12 +533,12 @@ export default class GamificationPlugin extends Plugin {
         if (this.data.health > 100) this.data.health = 100;
         new Notice(`You gained ${event.amount} health!`);
       } else if (event.type === "enemy_encounter") {
-        this.enemyEncounter();
+        await this.enemyEncounter();
       }
     }
   }
 
-  enemyEncounter() {
+  async enemyEncounter() {
     const enemy = enemies[Math.floor(Math.random() * enemies.length)];
     new Notice(`An enemy ${enemy.name} appeared!`);
 
@@ -546,18 +551,18 @@ export default class GamificationPlugin extends Plugin {
       new Notice(
         `You defeated the ${enemy.name} and gained ${enemy.xpReward} XP!`
       );
-      this.gainXP(enemy.xpReward);
-      this.attemptToGainUniqueSkill();
+      await this.gainXP(enemy.xpReward);
+      await this.attemptToGainUniqueSkill();
     } else {
       new Notice(
         `The ${enemy.name} attacked you and you lost ${enemy.damage} health!`
       );
     }
 
-    this.saveSettings();
+    await this.saveSettings();
   }
 
-  attemptToGainUniqueSkill() {
+  async attemptToGainUniqueSkill() {
     const chance = Math.random();
     if (chance < 0.05) {
       // 5% chance to gain a unique skill
@@ -572,37 +577,43 @@ export default class GamificationPlugin extends Plugin {
     }
   }
 
-  updateWordCount() {
+  async updateWordCount() {
     const activeLeaf = this.app.workspace.activeLeaf;
     if (activeLeaf && activeLeaf.view instanceof MarkdownView) {
       const editor = activeLeaf.view.editor;
-      const wordCount = this.countWords(editor.getValue());
+      const wordCount = await this.countWords(editor.getValue()).then(
+        (wordCount) => {
+          return wordCount;
+        }
+      );
       const newWords = wordCount - this.data.totalWords;
       if (newWords > 0) {
         this.data.totalWords = wordCount;
-        this.updateStatusBar();
+        await this.updateStatusBar();
         if (wordCount > 50) {
-          this.triggerRandomEvent();
-          this.saveSettings();
+          await this.triggerRandomEvent();
+          await this.saveSettings();
         } else if (wordCount > 150) {
-          this.gainXP(newWords);
-          this.triggerRandomEvent();
-          this.saveSettings();
+          await this.gainXP(newWords);
+          await this.triggerRandomEvent();
+          await this.saveSettings();
         }
       }
     }
   }
 
-  countWords(text: string): number {
+  async countWords(text: string): Promise<number> {
     return text.split(/\s+/).filter((word) => word.length > 0).length;
   }
 
-  gainXP(amount: number) {
+  async gainXP(amount: number) {
     this.data.xp += amount;
-    const requiredXP = this.calculateRequiredXP();
-    if (this.data.xp >= requiredXP) {
+    const requiredXP = this.calculateRequiredXP().then((xpAmount) => {
+      return xpAmount;
+    });
+    if (this.data.xp >= (await requiredXP)) {
       this.data.level++;
-      this.data.xp -= requiredXP;
+      this.data.xp -= await requiredXP;
 
       const className = classes[Math.floor(Math.random() * classes.length)];
 
@@ -618,7 +629,7 @@ export default class GamificationPlugin extends Plugin {
               new Notice(`Congratulations! ${skill.name} points were updated`);
             }
           });
-        this.saveSettings();
+        await this.saveSettings();
         new Notice(`Congratulations! You've reached level ${this.data.level}`);
       }
     } else {
@@ -626,7 +637,7 @@ export default class GamificationPlugin extends Plugin {
     }
   }
 
-  calculateRequiredXP(): number {
+  async calculateRequiredXP(): Promise<number> {
     return 100 * Math.pow(1.1, this.data.level - 1); // Exponentially increasing XP requirement
   }
 }
@@ -637,7 +648,7 @@ class GamificationSettingTab extends PluginSettingTab {
     super(app, plugin);
   }
 
-  display(): void {
+  async display(): Promise<void> {
     let { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Gamification Plugin" });
@@ -657,13 +668,17 @@ class GamificationSettingTab extends PluginSettingTab {
             .forEach((skill) => {
               this.plugin.data.skills[skill.name] = skill.points;
             });
-          await this.plugin.saveSettings();
-          this.display(); // Re-render settings to show new skills
+          await this.plugin.saveSettings().then(async () => {
+            await this.display();
+          });
+          // Re-render settings to show new skills
         });
       });
 
-    if (this.plugin.data.skills !== null) {
-      console.log(this.plugin.data.skills.points);
+    if (
+      this.plugin.data.skills !== null &&
+      String(this.plugin.data.skills) !== "undefined"
+    ) {
       Object.keys(this.plugin.data.skills).forEach((skill) => {
         new Setting(containerEl)
           .setName(skill)
